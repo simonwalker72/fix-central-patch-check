@@ -1122,15 +1122,16 @@ Examples:
     console.print(Rule(style="cyan"))
 
     # ── Step 4: output ────────────────────────────────────────────────────────
-    if args.output:
-        if not _write_csv(entries, args.output, release_order, platform_order):
-            return 1
-    elif args.newest_only:
+    if args.newest_only:
         _log("INFO", "Newest fix per release, platform and category:")
         _print_table_newest(entries, release_order, platform_order)
     else:
         _print_table(entries, limit=None if args.show_all else DEFAULT_LIMIT,
                      release_order=release_order, platform_order=platform_order)
+
+    if args.output:
+        if not _write_csv(entries, args.output, release_order, platform_order):
+            return 1
 
     console.print()
     return 0
