@@ -17,27 +17,58 @@ A command-line tool that queries [IBM Fix Central](https://www.ibm.com/support/f
 
 **Python 3.10+**
 
-Install Python dependencies:
+---
+
+## Setup
+
+It is recommended to use a Python virtual environment to keep dependencies isolated.
+
+### Create and activate a virtual environment
+
+**Windows (PowerShell):**
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+**Windows (Command Prompt):**
+```cmd
+python -m venv .venv
+.venv\Scripts\activate.bat
+```
+
+**macOS / Linux:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Once activated, your prompt will show (.venv).
+
+### Install dependencies
 
 ```bash
 pip install playwright rich
+playwright install chromium
 ```
 
-Install the Chromium browser used for scraping:
+To deactivate the virtual environment when you are done:
 
 ```bash
-playwright install chromium
+deactivate
 ```
 
 ---
 
 ## Installation
 
-No package installation required. Clone or download the repository and run the script directly:
+No package installation required. Clone the repository, create a virtual environment, and install dependencies:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ibm-fc-patch-checker.git
-cd ibm-fc-patch-checker
+git clone https://github.com/simonwalker72/fix-central-patch-check.git
+cd fix-central-patch-check
+python -m venv .venv
+source .venv/bin/activate        # Windows: .\.venv\Scripts\Activate.ps1
 pip install playwright rich
 playwright install chromium
 ```
