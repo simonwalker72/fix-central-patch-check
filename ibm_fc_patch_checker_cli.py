@@ -3,6 +3,8 @@
 """
 IBM Fix Central Patch Checker
 ==============================
+Version: v1.0 (2026-09-18)
+
 Lists available fixes for any IBM product on Fix Central, grouped by category
 and sorted by release date (newest first).
 
@@ -47,6 +49,9 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+
+__version__ = "1.0"
+__date__ = "2026-09-18"
 
 # ---------------------------------------------------------------------------
 # ANSI Color & Terminal Formatting (Zero external dependencies)
@@ -1040,7 +1045,7 @@ def _write_csv(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="List IBM Fix Central patches for any IBM product",
+        description=f"IBM Fix Central Patch Checker v{__version__} - List IBM Fix Central patches for any IBM product",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         allow_abbrev=False,
         epilog="""
@@ -1048,9 +1053,15 @@ Examples:
   %(prog)s guardium
   %(prog)s "db2" --newest-only
   %(prog)s guardium --releases 12.2 12.x --platforms Linux
-  %(prog)s guardium --category "KTAP Bundle" "Database Agent (STAP, GIM and CAS)"
+  %(prog)s "IBM Security Guardium" --category "KTAP Bundle" "Database Agent (STAP, GIM and CAS)"
   %(prog)s guardium --output fixes.csv
         """,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s v{__version__} ({__date__})",
+        help="Show program's version number and exit",
     )
     parser.add_argument(
         "product_query",
@@ -1095,7 +1106,7 @@ Examples:
     args = parser.parse_args()
 
     # ── Header ───────────────────────────────────────────────────────────────
-    _print_panel("IBM Fix Central Patch Checker")
+    _print_panel(f"IBM Fix Central Patch Checker v{__version__}")
 
     # ── Step 1: search for products ──────────────────────────────────────────
     _log("INFO", f"Searching Fix Central for: '{_yellow(args.product_query)}'")
