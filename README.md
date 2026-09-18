@@ -110,7 +110,7 @@ python3 ibm_fc_patch_checker_cli.py guardium
 
 ### Search by keyword — skip prompts
 
-Passes releases and platforms directly to skip all interactive prompts:
+Passes releases and platforms directly to skip some interactive prompts:
 
 ```bash
 python3 ibm_fc_patch_checker_cli.py guardium --releases 12.2 --platforms Linux
