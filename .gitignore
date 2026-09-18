@@ -1,4 +1,4 @@
-.old/guardium_fix_central_checker_cli.py
-.old/guardium_fix_checker copy.py
-.vscode/settings.json
-__pycache__/fc_patch_checker.cpython-312.pyc
+.old/
+.vscode/
+__pycache__/
+*.csv
