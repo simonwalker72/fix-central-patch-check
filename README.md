@@ -1,4 +1,4 @@
-# IBM Fix Central Patch Checker
+# IBM Fix Central Patch Checker `v1.0`
 
 A command-line tool that queries [IBM Fix Central](https://www.ibm.com/support/fixcentral/) and lists available patches for any IBM product, grouped by category and sorted by release date (newest first).
 
@@ -88,6 +88,7 @@ python3 ibm_fc_patch_checker_cli.py PRODUCT [OPTIONS]
 
 | Flag | Description |
 |---|---|
+| `--version` | Show program's version number and exit. |
 | `--releases RELEASE [...]` | One or more release versions to check. Discovered and prompted if omitted. |
 | `--platforms PLATFORM [...]` | One or more platforms to check. Discovered and prompted if omitted. Quote multi-word names: `"IBM i"`. |
 | `--category CAT [...]` | Filter to specific category name(s). Must match exactly — quote multi-word names. Omit to see all categories. |
