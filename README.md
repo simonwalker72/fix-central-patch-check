@@ -7,23 +7,23 @@ A command-line tool that queries [IBM Fix Central](https://www.ibm.com/support/f
 ## How it works
 
 1. **Product search** — queries Fix Central's search endpoint over plain HTTPS and presents matching products as a numbered list. If the exact product name is passed (e.g. from a previous tip), it is matched directly without prompting.
-2. **Release & platform discovery** — launches a headless Chromium browser, navigates to the product's Fix Central page, and scrapes the release and platform dropdowns. Values are presented interactively if not supplied on the command line, or validated silently if they were.
-3. **Fix scraping** — fetches the `selectFixes` page for each release × platform combination and parses the rendered HTML into a structured list of fixes (fix ID, release date, category).
-4. **Output** — displays results in grouped rich tables in the terminal, or writes them to a CSV file.
+2. **Release & platform discovery** — fetches the product options page and calls Fix Central's AJAX endpoint to discover valid releases and platforms. Values are presented interactively if not supplied on the command line, or validated silently if they were.
+3. **Fix retrieval** — performs a two-phase HTTP session (GET to establish cookies, POST with `showStatus=false`) for each release × platform combination, then parses the returned HTML into a structured list of fixes (fix ID, release date, category).
+4. **Output** — displays results in grouped, colour-coded tables in the terminal, or writes them to a CSV file.
 
 ---
 
 ## Prerequisites
 
-**Python 3.10+**
+**Python 3.10+** — standard library only, no external packages required.
 
 ---
 
 ## Setup
 
-It is recommended to use a Python virtual environment to keep dependencies isolated.
+The tool has no dependencies beyond Python itself — clone and run. A virtual environment is optional but can help keep your Python environment tidy if you use it for other projects too.
 
-### Create and activate a virtual environment
+### Optional: create and activate a virtual environment
 
 **Windows (PowerShell):**
 ```powershell
@@ -37,22 +37,15 @@ python -m venv .venv
 .venv\Scripts\activate.bat
 ```
 
-**macOS / Linux:**
+**macOS / Linux / containers:**
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Once activated, your prompt will show (.venv).
+> **Note:** On Linux and inside containers (e.g. when running via `podman run` or `docker run`), the Python executable is typically named `python3`, not `python`. The unversioned `python` command is often absent. If you see `bash: python: command not found`, use `python3` in its place throughout these instructions.
 
-### Install dependencies
-
-```bash
-pip install playwright rich
-playwright install chromium
-```
-
-To deactivate the virtual environment when you are done:
+To deactivate when you are done:
 
 ```bash
 deactivate
@@ -62,25 +55,31 @@ deactivate
 
 ## Installation
 
-No package installation required. Clone the repository, create a virtual environment, and install dependencies:
+No package installation required. Clone the repository and run directly — no dependencies to install:
 
 ```bash
 git clone https://github.com/simonwalker72/fix-central-patch-check.git
 cd fix-central-patch-check
-python -m venv .venv
+python3 ibm_fc_patch_checker_cli.py guardium
+```
+
+A virtual environment is optional but still recommended to keep the project isolated:
+
+```bash
+python3 -m venv .venv            # Windows: python -m venv .venv
 source .venv/bin/activate        # Windows: .\.venv\Scripts\Activate.ps1
-pip install playwright rich
-playwright install chromium
 ```
 
 ---
 
 ## Usage
 
+> **Container / Linux users:** If `python` is not found, use `python3` in all commands below. See the [Setup](#setup) note above.
+
 ### Basic syntax
 
 ```
-python ibm_fc_patch_checker_cli.py PRODUCT [OPTIONS]
+python3 ibm_fc_patch_checker_cli.py PRODUCT [OPTIONS]
 ```
 
 `PRODUCT` is a keyword or full product name. Partial keywords work — you will be prompted to choose from matching results.
@@ -95,7 +94,7 @@ python ibm_fc_patch_checker_cli.py PRODUCT [OPTIONS]
 | `--newest-only` | Show only the single newest fix per release, platform and category. |
 | `--output FILE` | Write results to a CSV file instead of printing to the terminal. |
 | `--show-all` | Show all fixes per category (default: cap at 10 per category). |
-| `--page-timeout SECS` | Seconds to wait for Fix Central to render (default: 90). |
+| `--page-timeout SECS` | Seconds to wait for Fix Central HTTP responses (default: 90). |
 
 ---
 
@@ -106,7 +105,7 @@ python ibm_fc_patch_checker_cli.py PRODUCT [OPTIONS]
 Searches Fix Central for products matching `guardium` and prompts you to choose one, then prompts for a release and platform:
 
 ```bash
-python ibm_fc_patch_checker_cli.py guardium
+python3 ibm_fc_patch_checker_cli.py guardium
 ```
 
 ### Search by keyword — skip prompts
@@ -114,7 +113,7 @@ python ibm_fc_patch_checker_cli.py guardium
 Passes releases and platforms directly to skip all interactive prompts:
 
 ```bash
-python ibm_fc_patch_checker_cli.py guardium --releases 12.2 --platforms Linux
+python3 ibm_fc_patch_checker_cli.py guardium --releases 12.2 --platforms Linux
 ```
 
 ### Use the full product name
@@ -122,13 +121,13 @@ python ibm_fc_patch_checker_cli.py guardium --releases 12.2 --platforms Linux
 The tool always tips you with the exact product name and flags after an interactive run. Paste that command to skip the product selection prompt next time:
 
 ```bash
-python ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 --platforms Linux
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 --platforms Linux
 ```
 
 ### Multiple releases and platforms
 
 ```bash
-python ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 12.1 11.5 --platforms Linux Windows
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 12.1 11.5 --platforms Linux Windows
 ```
 
 ### Platforms with spaces in the name
@@ -137,10 +136,10 @@ Quote multi-word platform names. Unquoted tokens are automatically rejoined if t
 
 ```bash
 # Quoted (recommended)
-python ibm_fc_patch_checker_cli.py db2 --platforms "IBM i" Linux
+python3 ibm_fc_patch_checker_cli.py db2 --platforms "IBM i" Linux
 
 # Unquoted — also works, rejoined automatically
-python ibm_fc_patch_checker_cli.py db2 --platforms IBM i Linux
+python3 ibm_fc_patch_checker_cli.py db2 --platforms IBM i Linux
 ```
 
 ### Filter by category
@@ -148,7 +147,7 @@ python ibm_fc_patch_checker_cli.py db2 --platforms IBM i Linux
 Category names must match exactly. Quote multi-word names:
 
 ```bash
-python ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
   --releases 12.2 --platforms Linux \
   --category "KTAP Bundle"
 ```
@@ -156,7 +155,7 @@ python ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
 Multiple categories can be specified:
 
 ```bash
-python ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
   --releases 12.2 --platforms Linux \
   --category "KTAP Bundle" "Database Agent (STAP, GIM and CAS)"
 ```
@@ -168,7 +167,7 @@ Run without `--category` to see all available category names for a product.
 Shows one row per release/platform/category — the most recently released fix in each group:
 
 ```bash
-python ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
   --releases 12.2 --platforms Linux \
   --newest-only
 ```
@@ -176,7 +175,7 @@ python ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
 ### Export to CSV
 
 ```bash
-python ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
   --releases 12.2 12.1 \
   --platforms Linux Windows \
   --output guardium_fixes.csv
@@ -189,7 +188,7 @@ The CSV contains columns: `Release`, `Platform`, `Category`, `Release Date`, `Fi
 By default, each category is capped at 10 fixes. Use `--show-all` to remove the cap:
 
 ```bash
-python ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
   --releases 12.2 --platforms Linux \
   --show-all
 ```
@@ -197,7 +196,7 @@ python ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
 ### WebSphere with a multi-word platform
 
 ```bash
-python ibm_fc_patch_checker_cli.py "WebSphere Application Server" \
+python3 ibm_fc_patch_checker_cli.py "WebSphere Application Server" \
   --releases 9.0.5.29 \
   --platforms "Windows 64-bit, x86"
 ```
@@ -222,13 +221,14 @@ When `--releases` or `--platforms` are supplied, the tool always validates them 
 
 ### Terminal (default)
 
-Results are grouped by release/platform, then by category. Each category is a table with `Release Date` and `Fix ID` columns:
+Results are grouped by release/platform, then by category. Each category prints a `Release Date` and `Fix ID` column:
 
 ```
 ──────────────────── Release: 12.2  |  Platform: Linux ────────────────────
+
 KTAP Bundle
  Release Date     Fix ID
-────────────────────────────────────────────────────────
+ ──────────────   ───────────────────────────────────────────────────────────
  2025/06/15       guardium-ktap-12.2.0.100-rh8-x86_64
  2025/03/10       guardium-ktap-12.2.0.99-rh8-x86_64
  ...              8 more — use --show-all to see all
@@ -244,11 +244,34 @@ Release,Platform,Category,Release Date,Fix ID
 
 ---
 
+## Running the tests
+
+A self-contained unit test suite covers all pure-logic functions (no network calls required):
+
+```bash
+python3 .old/test_ibm_fc_patch_checker.py
+```
+
+Expected output ends with `All tests passed.`
+
+---
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Success — fixes found and displayed (or written to CSV). |
+| `1` | Error — no product found, invalid arguments, network failure, or no fixes returned. |
+| `130` | Aborted by the user (`Ctrl+C`). |
+
+---
+
 ## Notes
 
 - **No IBM credentials required.** The tool only accesses publicly available Fix Central pages.
 - **Network access required.** All data is fetched live from `www.ibm.com`.
-- **Chromium is used for JavaScript-rendered pages.** Fix Central's product and fix pages require JS execution to populate dropdowns and render fix tables. The browser always runs headlessly.
+- **No browser required.** The tool uses plain HTTPS requests and cookie-based session handling — no Chromium or Playwright dependency.
+- **No external packages required.** Runs on Python 3.10+ standard library only.
 - **Category names are case-sensitive.** Run without `--category` once to see exact names, then use them in subsequent runs.
 - **The tool does not cache results.** Every run fetches fresh data from Fix Central.
 
