@@ -147,17 +147,13 @@ python3 ibm_fc_patch_checker_cli.py db2 --platforms IBM i Linux
 Category names must match exactly. Quote multi-word names:
 
 ```bash
-python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
-  --releases 12.2 --platforms Linux \
-  --category "KTAP Bundle"
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 --platforms Linux --category "KTAP Bundle"
 ```
 
 Multiple categories can be specified:
 
 ```bash
-python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
-  --releases 12.2 --platforms Linux \
-  --category "KTAP Bundle" "Database Agent (STAP, GIM and CAS)"
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 --platforms Linux --category "KTAP Bundle" "Database Agent (STAP, GIM and CAS)"
 ```
 
 Run without `--category` to see all available category names for a product.
@@ -167,18 +163,13 @@ Run without `--category` to see all available category names for a product.
 Shows one row per release/platform/category — the most recently released fix in each group:
 
 ```bash
-python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
-  --releases 12.2 --platforms Linux \
-  --newest-only
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 --platforms Linux --newest-only
 ```
 
 ### Export to CSV
 
 ```bash
-python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
-  --releases 12.2 12.1 \
-  --platforms Linux Windows \
-  --output guardium_fixes.csv
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 12.1 --platforms Linux Windows --output guardium_fixes.csv
 ```
 
 The CSV contains columns: `Release`, `Platform`, `Category`, `Release Date`, `Fix ID`.
@@ -188,17 +179,13 @@ The CSV contains columns: `Release`, `Platform`, `Category`, `Release Date`, `Fi
 By default, each category is capped at 10 fixes. Use `--show-all` to remove the cap:
 
 ```bash
-python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" \
-  --releases 12.2 --platforms Linux \
-  --show-all
+python3 ibm_fc_patch_checker_cli.py "IBM Security Guardium" --releases 12.2 --platforms Linux --show-all
 ```
 
 ### WebSphere with a multi-word platform
 
 ```bash
-python3 ibm_fc_patch_checker_cli.py "WebSphere Application Server" \
-  --releases 9.0.5.29 \
-  --platforms "Windows 64-bit, x86"
+python3 ibm_fc_patch_checker_cli.py "WebSphere Application Server" --releases 9.0.5.29 --platforms "Windows 64-bit, x86"
 ```
 
 ---
@@ -241,18 +228,6 @@ When `--output` is used, a UTF-8 CSV is written with the header:
 ```
 Release,Platform,Category,Release Date,Fix ID
 ```
-
----
-
-## Running the tests
-
-A self-contained unit test suite covers all pure-logic functions (no network calls required):
-
-```bash
-python3 .old/test_ibm_fc_patch_checker.py
-```
-
-Expected output ends with `All tests passed.`
 
 ---
 
